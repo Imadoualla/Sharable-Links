@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>456 Lakeview Ln · Rendy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Poppins:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --page: #fbfbfb;
+      --white: #ffffff;
+      --surface: #fdfdfd;
+      --ink: #101828;
+      --black: #000000;
+      --muted: #a3a3a3;
+      --faint: #bfbfbf;
+      --line: #ededed;
+      --line-soft: #f8f8f8;
+      --grad-dark: linear-gradient(180deg, #1c201d 0%, #000 100%);
+      --inset-glow: inset 0 2px 5.9px rgba(255, 255, 255, 0.42);
+      --btn-drop: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+      /* from the Figma: dropdown + toast elevation */
+      --shadow-menu:
+        0 16px 48px -4px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 0, 0, 0.05),
+        0 2.15px 0.5px -2px rgba(0, 0, 0, 0.25), 0 24px 24px -16px rgba(8, 8, 8, 0.04),
+        0 6px 13px rgba(8, 8, 8, 0.03), 0 6px 4px -4px rgba(8, 8, 8, 0.05),
+        0 5px 1.5px -4px rgba(8, 8, 8, 0.09);
+      --shadow-toast:
+        0 80px 22px rgba(0, 0, 0, 0), 0 51px 20px rgba(0, 0, 0, 0.01),
+        0 29px 17px rgba(0, 0, 0, 0.03), 0 13px 13px rgba(0, 0, 0, 0.05),
+        0 3px 7px rgba(0, 0, 0, 0.06);
+      /* motion tokens (same curves as dashboard.html) */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0; background: var(--page); color: var(--black);
+      font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; max-width: none; }
+    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible { outline: 2px solid #101828; outline-offset: 2px; }
+    p { margin: 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* Icon drawn from an asset file used as a mask, so it can follow currentColor in hover/active states */
+    .mask-ic { display: block; flex: none; background-color: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+
+    /* ---------- Page ---------- */
+    .page { width: min(993px, 100% - 32px); margin: 0 auto; padding: 24px 0 120px; display: flex; flex-direction: column; gap: 24px; }
+
+    .navbar { background: var(--white); border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .navbar .logo { width: 119.68px; height: 32px; }
+    .avatar { display: grid; place-items: center; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid #f0f0f0; overflow: hidden; }
+    .avatar .pic { position: relative; width: 42px; height: 42px; border-radius: 100px; overflow: hidden; }
+    .avatar .pic img { position: absolute; left: -1.34px; top: -1.34px; width: 44.689px; height: 44.689px; object-fit: cover; }
+
+    .panel { background: var(--white); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 32px; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .crumbs { display: flex; align-items: center; gap: 16px; font-size: 16px; line-height: 20px; }
+    .crumbs .root { color: var(--muted); }
+    .crumbs .dot { width: 6px; height: 6px; }
+    .crumbs .addr { display: flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; }
+    .crumbs .addr img { width: 20px; height: 20px; }
+
+    .actions { display: flex; align-items: center; gap: 20px; }
+
+    .btn-light {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+      filter: drop-shadow(var(--btn-drop));
+      transition: transform 140ms var(--ease-out);
+    }
+    .btn-light:active { transform: scale(0.97); }
+    .btn-edit-all { padding: 12px 20px; font-size: 16px; line-height: 20px; color: var(--black); }
+    .btn-edit-all img { width: 20px; height: 20px; }
+
+    /* Split button: Download All | chevron */
+    .split { position: relative; }
+    .split-body {
+      position: relative; height: 48px; display: flex; align-items: center; border-radius: 12px;
+      background: var(--grad-dark); box-shadow: var(--inset-glow); color: var(--white);
+    }
+    .split-main { height: 100%; display: flex; align-items: center; gap: 6px; padding-left: 20px; padding-right: 20px; font-size: 16px; line-height: 20px; border-radius: 12px 0 0 12px; transition: transform 140ms var(--ease-out); }
+    .split-main img { width: 20px; height: 20px; }
+    .split-main:active { transform: scale(0.98); }
+    .split-divider { width: 0; height: 48px; display: flex; align-items: center; justify-content: center; }
+    .split-divider img { width: 48px; height: 1px; transform: rotate(90deg); flex: none; }
+    .split-toggle { height: 100%; display: grid; place-items: center; padding-left: 12px; padding-right: 12px; border-radius: 0 12px 12px 0; }
+    .split-toggle img { width: 24px; height: 24px; transition: transform 220ms var(--ease-out); }
+    .split-toggle[aria-expanded="true"] img { transform: rotate(180deg); }
+    .split-toggle:focus-visible, .split-main:focus-visible { outline-color: #fff; outline-offset: -4px; }
+
+    /* ---------- Dropdown ---------- */
+    .menu {
+      /* pinned to both edges of the split button so the menu is always exactly its width */
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40;
+      background: var(--surface); border: 1px solid var(--line-soft); border-radius: 20px;
+      box-shadow: var(--shadow-menu); overflow: hidden;
+      transform-origin: top right;
+      opacity: 0; transform: translateY(-4px) scale(0.96); visibility: hidden; pointer-events: none;
+      transition: opacity 150ms var(--ease-out), transform 150ms var(--ease-out), visibility 0s linear 150ms;
+    }
+    .menu.is-open {
+      opacity: 1; transform: none; visibility: visible; pointer-events: auto;
+      transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out), visibility 0s;
+    }
+    .menu-items { position: relative; padding: 8px; display: flex; flex-direction: column; }
+    /* one highlight that glides between rows instead of each row flashing on/off */
+    .menu-hl {
+      position: absolute; left: 8px; right: 8px; top: 8px; height: 44px;
+      background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 12px;
+      opacity: 0; pointer-events: none;
+      transition: transform 200ms var(--ease-in-out), opacity 120ms ease;
+    }
+    .menu-item {
+      position: relative; height: 44px; width: 100%; display: flex; align-items: center; gap: 6px;
+      padding: 0 14px; border-radius: 12px; text-align: left;
+      font-size: 14px; line-height: 20px; letter-spacing: 0.175px; font-weight: 400; white-space: nowrap;
+      color: var(--muted);
+      transition: color 150ms ease, font-weight 150ms ease, transform 120ms var(--ease-out);
+    }
+    .menu-item[data-tone="faint"] { color: var(--faint); }
+    .menu-item.is-active { color: var(--black); font-weight: 500; }
+    .menu-item:active { transform: scale(0.98); }
+    .menu-item:focus-visible { outline: none; }
+    .menu-item .mask-ic { width: 20px; height: 20px; }
+    .menu-item .logo-ic { position: relative; width: 20px; height: 20px; flex: none; overflow: hidden; }
+    /* brand logos sit grey with the other rows, and take their real colours when the row is active */
+    .menu-item .logo-ic img { position: absolute; filter: grayscale(1); opacity: 0.5; transition: filter 150ms ease, opacity 150ms ease; }
+    .menu-item.is-active .logo-ic img { filter: none; opacity: 1; }
+    .menu-item .logo-ic.drive img { inset: 10.12% 5.01% 11.29% 5.04%; width: 89.95%; height: 78.59%; }
+    .menu-item .logo-ic.dropbox img { inset: 10% 5% 13.52% 5%; width: 90%; height: 76.48%; }
+    .menu-item .drive-text, .menu-item .dropbox-text { font-feature-settings: "ss01" 1; }
+    /* menu rows settle in just behind the panel */
+    .menu .menu-item { opacity: 0; transform: translateY(-3px); }
+    .menu.is-open .menu-item { opacity: 1; transform: none; transition: color 150ms ease, font-weight 150ms ease, opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
+    .menu.is-open .menu-item:nth-child(2) { transition-delay: 0ms, 0ms, 20ms, 20ms; }
+    .menu.is-open .menu-item:nth-child(3) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
+    .menu.is-open .menu-item:nth-child(4) { transition-delay: 0ms, 0ms, 80ms, 80ms; }
+    .menu.is-open .menu-item:nth-child(5) { transition-delay: 0ms, 0ms, 110ms, 110ms; }
+    .menu.is-open .menu-item:nth-child(6) { transition-delay: 0ms, 0ms, 140ms, 140ms; }
+    .menu.is-open .menu-item:active { transform: scale(0.98); transition-delay: 0ms; }
+
+    /* ---------- Listing grid ---------- */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, 299px); justify-content: space-between; column-gap: 24px; row-gap: 24px; }
+
+    .card { width: 299px; background: var(--page); border: 1px solid var(--line-soft); border-radius: 20px; padding: 12px 8px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+    .card-top { display: flex; flex-direction: column; gap: 12px; }
+    .card-title { height: 24px; padding: 0 12px; display: flex; align-items: center; gap: 4px; font-size: 14px; line-height: 20px; color: var(--black); }
+    .card-title img { width: 16px; height: 16px; }
+
+    .video { position: relative; width: 283px; height: 504px; border-radius: 12px; overflow: hidden; }
+    .video .shot { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+    .video .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .video .shot .fade { position: absolute; inset: 0; }
+    .badge {
+      position: absolute; top: 16px; right: 12px; padding: 6px 12px; border-radius: 41px;
+      border: 1px solid #fff; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(4.813px); -webkit-backdrop-filter: blur(4.813px);
+      font-size: 10px; line-height: 16px; font-weight: 600; letter-spacing: 0.125px; text-transform: uppercase; color: #fff; white-space: nowrap;
+    }
+
+    .player { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: 251px; display: flex; align-items: center; gap: 20px; }
+    .player .pp { width: 24px; height: 24px; flex: none; }
+    .player .track-row { flex: 1 0 0; min-width: 1px; display: flex; align-items: center; gap: 8px; }
+    .player .track { position: relative; flex: 1 0 0; height: 5px; border-radius: 34px; overflow: hidden; }
+    .player .track.soft { background: #fff; opacity: 0.5; }
+    .player .track.warm { background: #a09b99; }
+    .player .track .fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 5px; background: #fff; }
+    .player .time { font-family: "Poppins", sans-serif; font-size: 12px; line-height: 16px; color: #fff; white-space: nowrap; }
+    .player .knob { position: absolute; width: 16px; height: 16px; }
+
+    .card-actions { display: flex; gap: 12px; }
+    .card-actions > * { flex: 1 0 0; min-width: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 20px; border-radius: 10px; font-size: 14px; line-height: 20px; transition: transform 140ms var(--ease-out); }
+    .card-actions > *:active { transform: scale(0.97); }
+    .card-actions img { width: 16px; height: 16px; }
+    .btn-dl { background: var(--grad-dark); box-shadow: var(--inset-glow); color: #fff; }
+    .btn-edit { background: #fff; border: 1px solid var(--line); filter: drop-shadow(var(--btn-drop)); color: var(--ink); }
+
+    /* ---------- Attention overlay ---------- */
+    /*
+      Flash of attention: 0.5s up to the design's frosted state, then a slower 1s release.
+      Only opacity animates (composited, no per-frame re-blur), and fading the layer fades its
+      backdrop blur with it, so the page still eases sharp → frosted → sharp.
+    */
+    .overlay {
+      position: fixed; inset: 0; z-index: 50;
+      background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+      opacity: 0; visibility: hidden; will-change: opacity;
+      transition: opacity 1000ms var(--ease-in-out), background-color 300ms ease, visibility 0s linear 1000ms;
+    }
+    .overlay.is-visible { opacity: 1; visibility: visible; transition: opacity 200ms var(--ease-out), background-color 300ms ease, visibility 0s; }
+    /* hovering the toast: a lighter wash so the page stays readable behind it, quicker in and out */
+    .overlay.is-hover { background-color: rgba(255, 255, 255, 0.5); transition: opacity 500ms var(--ease-out), background-color 300ms ease, visibility 0s linear 500ms; }
+    .overlay.is-visible.is-hover { transition: opacity 500ms var(--ease-out), background-color 300ms ease, visibility 0s; }
+
+    /* ---------- Share link toast ---------- */
+    .toast-dock { position: fixed; left: 0; right: 0; bottom: 20px; z-index: 60; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+    /*
+      Entrance: one clean shape, always at full height.
+        - the toast rises in as a 1px line, then its surface opens from that line to full width,
+          centred, starting slightly soft and sharpening as it opens
+        - the contents then come into focus, drifting outward with the opening edges
+      Exit plays it backwards.
+      The surface is the Figma toast untouched (border, shadow, blur on ::before). Only its
+      left/right edges move, so corners and shadow never distort; the contents are revealed by a
+      clip-path on the same timing so they never spill past the edges.
+    */
+    .toast {
+      position: relative; max-width: 100%; pointer-events: auto;
+      opacity: 0; visibility: hidden; transform: translateY(16px) scale(0.97);
+      will-change: transform, opacity;
+      transition: transform 220ms var(--ease-out) 300ms, opacity 200ms var(--ease-out) 320ms, visibility 0s linear 520ms;
+    }
+    .toast.is-in {
+      opacity: 1; visibility: visible; transform: none;
+      transition: transform 520ms var(--ease-out), opacity 280ms var(--ease-out), visibility 0s;
+    }
+    .toast::before {
+      content: ""; position: absolute; z-index: 0; top: 0; bottom: 0; left: calc(50% - 0.5px); right: calc(50% - 0.5px);
+      border-radius: 16px; background: #fff; border: 1px solid #fff; box-shadow: var(--shadow-toast);
+      backdrop-filter: blur(17.874px); -webkit-backdrop-filter: blur(17.874px);
+      filter: blur(12px);
+      transition: left 320ms var(--ease-in-out) 80ms, right 320ms var(--ease-in-out) 80ms, filter 320ms var(--ease-in-out) 80ms;
+    }
+    /* the line shows for a beat as it rises, then opens. The blur holds soft through the
+       middle of the opening (ease-in-out) and only resolves as the toast reaches full size */
+    .toast.is-in::before {
+      left: 0; right: 0; filter: blur(0px);
+      transition: left 900ms var(--ease-drawer) 150ms, right 900ms var(--ease-drawer) 150ms, filter 1000ms var(--ease-in-out) 150ms;
+    }
+    /* padding 11 = the design's 10px padding + 1px border, which lives on ::before */
+    .toast-body {
+      position: relative; z-index: 1; display: flex; align-items: center; gap: 60px; padding: 11px;
+      clip-path: inset(0 calc(50% - 0.5px) round 16px);
+      transition: clip-path 320ms var(--ease-in-out) 80ms;
+    }
+    .toast.is-in .toast-body {
+      clip-path: inset(0 0 round 16px);
+      transition: clip-path 900ms var(--ease-drawer) 150ms;
+    }
+    .toast-link { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .link-chip { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--surface); border: 1px solid var(--line-soft); }
+    .link-chip img { width: 16px; height: 16px; }
+    .link-url { font-size: 16px; line-height: 20px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .link-url .url-text { transition: color 200ms ease; }
+    @media (hover: hover) and (pointer: fine) {
+      /* hovering the toast lifts the link to the same black as its icon */
+      .toast:hover .url-text { color: var(--black); }
+    }
+    .toast-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+
+    /* contents: start pulled toward the centre and soft, open out with the toast */
+    .toast .stagger {
+      opacity: 0; filter: blur(6px); transform: translateX(var(--from-x, 0px));
+      transition: opacity 120ms ease, filter 120ms ease, transform 160ms ease;
+    }
+    .toast .link-chip, .toast .link-url { --from-x: 24px; }
+    .toast .toast-actions { --from-x: -24px; }
+    .toast.is-in .stagger {
+      opacity: 1; filter: blur(0px); transform: none;
+      transition: opacity 400ms var(--ease-out), filter 650ms var(--ease-in-out), transform 750ms var(--ease-out);
+    }
+    .toast.is-in .link-chip { transition-delay: 480ms; }
+    .toast.is-in .link-url { transition-delay: 540ms; }
+    .toast.is-in .toast-actions { transition-delay: 510ms; }
+
+    .tbtn {
+      height: 36px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 10px; background: var(--surface); border: 1px solid var(--line-soft); color: var(--muted);
+      overflow: hidden;
+      transition: color 160ms ease, box-shadow 200ms ease, transform 140ms var(--ease-out);
+    }
+    .tbtn:active { transform: scale(0.96); }
+    .tbtn-close { width: 36px; padding: 10px; }
+    .tbtn-close .mask-ic { width: 16px; height: 16px; --src: url("assets/share/close.svg"); }
+
+    /* Copy button: icon hidden at rest, slides in on hover, gives way to "Link copied" once copied */
+    .tbtn-copy { padding: 10px 12px; font-size: 14px; line-height: 16px; }
+    .copy-inner { display: flex; align-items: center; gap: 4px; transition: transform 260ms var(--ease-out); }
+    .copy-ic { position: relative; width: 16px; height: 16px; flex: none; transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out), filter 200ms var(--ease-out); }
+    .copy-ic .mask-ic { position: absolute; inset: 0; --src: url("assets/share/copy.svg"); }
+    .copy-labels { position: relative; display: grid; justify-items: center; }
+    .copy-labels > span { grid-area: 1 / 1; white-space: nowrap; transition: opacity 180ms var(--ease-out), transform 280ms var(--ease-out), filter 180ms var(--ease-out); }
+    /* "Link copied" is laid over "Copy Link" without widening the button, so the toast keeps its design size */
+    .copy-labels .done { position: absolute; inset: 0; display: flex; justify-content: center; opacity: 0; transform: translateY(8px); filter: blur(2px); }
+
+    @media (hover: hover) and (pointer: fine) {
+      /* at rest: label centred, icon tucked away */
+      .tbtn-copy .copy-inner { transform: translateX(-10px); }
+      .tbtn-copy .copy-ic { opacity: 0; transform: scale(0.6) translateX(4px); filter: blur(2px); }
+      .tbtn-copy:hover .copy-inner, .tbtn-copy:focus-visible .copy-inner { transform: none; }
+      .tbtn-copy:hover .copy-ic, .tbtn-copy:focus-visible .copy-ic { opacity: 1; transform: none; filter: none; }
+      .tbtn:hover { color: var(--black); }
+      .tbtn-copy:hover { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
+    }
+
+    .tbtn-copy[data-state="copied"] { color: var(--black); box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); cursor: default; }
+    /* text only once copied: the icon tucks away and the label re-centres in the button */
+    .tbtn-copy[data-state="copied"] .copy-inner { transform: translateX(-10px); }
+    .tbtn-copy[data-state="copied"] .copy-ic { opacity: 0; transform: scale(0.6) translateX(4px); filter: blur(2px); }
+    .tbtn-copy[data-state="copied"] .copy-labels .idle { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
+    .tbtn-copy[data-state="copied"] .copy-labels .done { opacity: 1; transform: none; filter: none; transition-delay: 40ms; }
+
+    /* ---------- Small screens ---------- */
+    @media (max-width: 1024px) {
+      .grid { justify-content: center; }
+    }
+    @media (max-width: 720px) {
+      .panel { padding: 16px; }
+      .toast-body { gap: 16px; }
+    }
+    @media (max-width: 420px) {
+      .actions { gap: 12px; }
+      .btn-edit-all { padding: 12px 14px; }
+      .split-main { padding-left: 14px; padding-right: 14px; }
+      .link-chip { display: none; }
+    }
+
+    /* ---------- Reduced motion: keep the fades, drop the travel ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .menu, .menu .menu-item, .toast, .toast .stagger, .copy-labels > span, .copy-ic, .copy-inner { transform: none !important; }
+      .menu-hl { transition: opacity 120ms ease; }
+      .copy-labels > span, .copy-ic, .toast .stagger { filter: none !important; }
+      .toast-body, .toast.is-in .toast-body { clip-path: none; }
+      .toast::before, .toast.is-in::before { left: 0; right: 0; filter: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="navbar">
+      <img class="logo" src="assets/share/logo.svg" alt="Rendy" />
+      <div class="avatar"><div class="pic"><img src="assets/share/avatar.png" alt="Your account" /></div></div>
+    </header>
+
+    <main class="panel">
+      <div class="toolbar">
+        <div class="crumbs">
+          <span class="root">Dashboard</span>
+          <img class="dot" src="assets/share/dot.svg" alt="" />
+          <span class="addr"><img src="assets/share/map-point.svg" alt="" />456 Lakeview Ln, Tahoe City, CA</span>
+        </div>
+
+        <div class="actions">
+          <button class="btn-light btn-edit-all" type="button"><img src="assets/share/clapper-20.svg" alt="" />Edit All</button>
+
+          <div class="split">
+            <div class="split-body">
+              <button class="split-main" type="button"><img src="assets/share/download-20-white.svg" alt="" /><span id="downloadAllBtnLabel">Download 6 Videos</span></button>
+              <span class="split-divider" aria-hidden="true"><img src="assets/share/divider.svg" alt="" /></span>
+              <button class="split-toggle" id="menuTrigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu" aria-label="More export options">
+                <img src="assets/share/chevron-down.svg" alt="" />
+              </button>
+            </div>
+
+            <div class="menu" id="exportMenu" role="menu" aria-labelledby="menuTrigger">
+              <div class="menu-items">
+                <span class="menu-hl" aria-hidden="true"></span>
+                <button class="menu-item" role="menuitem" type="button" tabindex="-1">
+                  <span class="mask-ic" style="--src:url('assets/share/download-20.svg')"></span><span id="downloadAllLabel">Download 6 Videos</span>
+                </button>
+                <button class="menu-item" role="menuitem" type="button" tabindex="-1" data-tone="faint">
+                  <span class="mask-ic" style="--src:url('assets/share/library.svg')"></span>Download 17 Clips
+                </button>
+                <button class="menu-item" role="menuitem" type="button" tabindex="-1">
+                  <span class="logo-ic drive"><img src="assets/share/gdrive.svg" alt="" /></span><span class="drive-text">Export to Drive</span>
+                </button>
+                <button class="menu-item" role="menuitem" type="button" tabindex="-1">
+                  <span class="logo-ic dropbox"><img src="assets/share/dropbox.svg" alt="" /></span><span class="dropbox-text">Export to DropBox</span>
+                </button>
+                <button class="menu-item" role="menuitem" type="button" tabindex="-1" data-tone="faint" data-action="share">
+                  <span class="mask-ic" style="--src:url('assets/share/share-line.svg')"></span>Create Share Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="grid" aria-label="Rendered videos">
+        <!-- 1 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:943.029px;height:527.196px;left:calc(50% + 52.23px)">
+                <img src="assets/share/house-1.jpg" alt="Aerial view of the house and garden" />
+                <div class="fade" style="background-image:linear-gradient(178.78deg, rgba(0,0,0,0) 89.689%, #000 115.27%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/play.svg" alt="" />
+                <div class="track-row"><div class="track soft"></div><span class="time">0:00/0:22</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:44px;top:4px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+
+        <!-- 2 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:786.547px;height:524.621px">
+                <img src="assets/share/house-2.jpg" alt="Living room with a vintage toy fire truck" />
+                <div class="fade" style="background-image:linear-gradient(178.55deg, rgba(0,0,0,0) 89.689%, #000 115.27%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/play.svg" alt="" />
+                <div class="track-row"><div class="track warm"></div><span class="time">0:00/0:12</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:44px;top:4px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+
+        <!-- 3 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:779.813px;height:520.129px">
+                <img src="assets/share/house-3.jpg" alt="Bedroom with abstract artwork" />
+                <div class="fade" style="background-image:linear-gradient(178.55deg, rgba(0,0,0,0) 89.689%, #000 115.27%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/play.svg" alt="" />
+                <div class="track-row"><div class="track soft"></div><span class="time">0:00/0:22</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:44px;top:4px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+
+        <!-- 4 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:807.934px;height:538.688px">
+                <img src="assets/share/house-4.jpg" alt="Interior room view" />
+                <div class="fade" style="background-image:linear-gradient(180deg, rgba(0,0,0,0) 79.006%, #000 95.659%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/pause.svg" alt="" />
+                <div class="track-row"><div class="track warm"><div class="fill" style="width:55.596px"></div></div><span class="time">0:08/0:20</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:91.61px;top:4.23px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+
+        <!-- 5 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:823.728px;height:549.219px">
+                <img src="assets/share/house-5.jpg" alt="Interior room view" />
+                <div class="fade" style="background-image:linear-gradient(180deg, rgba(0,0,0,0) 79.006%, #000 95.659%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/play.svg" alt="" />
+                <div class="track-row"><div class="track soft"></div><span class="time">0:00/0:18</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:44px;top:4px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+
+        <!-- 6 -->
+        <article class="card">
+          <div class="card-top">
+            <div class="card-title"><img src="assets/share/music-note.svg" alt="" />Crescendo</div>
+            <div class="video">
+              <div class="shot" style="width:823.728px;height:549.219px">
+                <img src="assets/share/house-5.jpg" alt="Interior room view" />
+                <div class="fade" style="background-image:linear-gradient(180deg, rgba(0,0,0,0) 79.006%, #000 95.659%)"></div>
+              </div>
+              <span class="badge">Low RES preview</span>
+              <div class="player">
+                <img class="pp" src="assets/share/play.svg" alt="" />
+                <div class="track-row"><div class="track soft"></div><span class="time">0:00/0:18</span></div>
+                <img class="knob" src="assets/share/scrub-knob.svg" alt="" style="left:44px;top:4px" />
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-dl" type="button"><img src="assets/share/download-sm-white.svg" alt="" />Download</button>
+            <button class="btn-edit" type="button"><img src="assets/share/clapper-16.svg" alt="" />Edit</button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+  <div class="toast-dock">
+    <div class="toast" id="toast" role="region" aria-label="Share link" inert>
+     <div class="toast-body">
+      <div class="toast-link">
+        <span class="link-chip stagger"><img src="assets/share/link.svg" alt="" /></span>
+        <span class="link-url stagger" id="shareUrl"><span class="url-text">https://r.io/FHg8KLm</span></span>
+      </div>
+      <div class="toast-actions stagger">
+        <button class="tbtn tbtn-copy" id="copyBtn" type="button" data-state="idle">
+          <span class="copy-inner">
+            <span class="copy-ic" aria-hidden="true">
+              <span class="mask-ic"></span>
+            </span>
+            <span class="copy-labels">
+              <span class="idle">Copy Link</span>
+              <span class="done" aria-hidden="true">Link copied</span>
+            </span>
+          </span>
+        </button>
+        <button class="tbtn tbtn-close" id="closeBtn" type="button" aria-label="Dismiss share link"><span class="mask-ic"></span></button>
+      </div>
+     </div>
+    </div>
+  </div>
+
+  <div class="sr-only" id="announcer" aria-live="polite"></div>
+  <script>
+    (() => {
+      // Share sequence: frosted layer settles first, the toast opens on top of it, then the layer releases
+      const OVERLAY_IN = 200;      // overlay reaches its full frosted state
+      const OVERLAY_REST = 0;      // pause between the overlay settling and the toast starting
+      const TOAST_OPEN = 1200;     // toast's line → full-width opening, after which the overlay fades (1s)
+      const TOAST_DELAY = OVERLAY_IN + OVERLAY_REST;
+      const OVERLAY_HOLD = TOAST_DELAY + TOAST_OPEN;
+      const COPIED_HOLD = 1500;    // "Copied" stays readable before the toast leaves
+      const ROW = 44;
+
+      const trigger = document.getElementById('menuTrigger');
+      const menu = document.getElementById('exportMenu');
+      const hl = menu.querySelector('.menu-hl');
+      const items = [...menu.querySelectorAll('.menu-item')];
+      const overlay = document.getElementById('overlay');
+      const toast = document.getElementById('toast');
+      const copyBtn = document.getElementById('copyBtn');
+      const closeBtn = document.getElementById('closeBtn');
+      const url = document.getElementById('shareUrl').textContent.trim();
+      const announcer = document.getElementById('announcer');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+      // the menu's count always matches the videos on the page
+      const videoCount = document.querySelectorAll('.grid .card').length;
+      const downloadAllText = `Download ${videoCount} ${videoCount === 1 ? 'Video' : 'Videos'}`;
+      document.getElementById('downloadAllLabel').textContent = downloadAllText;
+      document.getElementById('downloadAllBtnLabel').textContent = downloadAllText;
+
+      let active = -1;
+      let overlayTimer = 0, toastTimer = 0, revealTimer = 0;
+
+      /* ---------- dropdown ---------- */
+      const isOpen = () => menu.classList.contains('is-open');
+
+      function setActive(i) {
+        items.forEach((el, n) => el.classList.toggle('is-active', n === i));
+        if (i < 0) { hl.style.opacity = '0'; active = -1; return; }
+        const y = `translateY(${i * ROW}px)`;
+        if (active < 0) {
+          // first row lit: appear in place, don't slide in from the top
+          hl.style.transition = 'opacity 120ms ease';
+          hl.style.transform = y;
+          void hl.offsetHeight;
+          hl.style.transition = '';
+        } else {
+          hl.style.transform = y;
+        }
+        hl.style.opacity = '1';
+        active = i;
+      }
+
+      function openMenu(focusFirst) {
+        menu.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        setActive(-1);
+        if (focusFirst) { setActive(0); items[0].focus({ preventScroll: true }); }
+      }
+
+      function closeMenu(returnFocus) {
+        if (!isOpen()) return;
+        menu.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        setActive(-1);
+        if (returnFocus) trigger.focus({ preventScroll: true });
+      }
+
+      trigger.addEventListener('click', (e) => {
+        isOpen() ? closeMenu(false) : openMenu(e.detail === 0);
+      });
+
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); openMenu(true); }
+      });
+
+      items.forEach((el, i) => {
+        el.addEventListener('pointerenter', () => setActive(i));
+        el.addEventListener('focus', () => setActive(i));
+        el.addEventListener('click', () => {
+          const share = el.dataset.action === 'share';
+          closeMenu(!share);
+          if (share) createShareLink();
+        });
+      });
+      menu.addEventListener('pointerleave', () => { if (!menu.contains(document.activeElement)) setActive(-1); });
+
+      menu.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const step = e.key === 'ArrowDown' ? 1 : -1;
+          const next = (Math.max(active, 0) + step + items.length) % items.length;
+          items[next].focus({ preventScroll: true });
+        } else if (e.key === 'Home' || e.key === 'End') {
+          e.preventDefault();
+          items[e.key === 'Home' ? 0 : items.length - 1].focus({ preventScroll: true });
+        } else if (e.key === 'Tab') {
+          closeMenu(false);
+        }
+      });
+
+      document.addEventListener('pointerdown', (e) => {
+        if (isOpen() && !menu.contains(e.target) && !trigger.contains(e.target)) closeMenu(false);
+      });
+
+      /* ---------- overlay ---------- */
+      function showOverlay() {
+        clearTimeout(overlayTimer);
+        overlay.classList.remove('is-hover');
+        overlay.classList.add('is-visible');
+        overlayTimer = setTimeout(hideOverlay, OVERLAY_HOLD);
+      }
+      function hideOverlay() {
+        clearTimeout(overlayTimer);
+        overlay.classList.remove('is-visible');
+      }
+      overlay.addEventListener('click', hideOverlay);
+
+      // hovering the toast brings the frosted layer back (and holds it) so the link has the stage again
+      toast.addEventListener('pointerenter', (e) => {
+        if (e.pointerType !== 'mouse' || !toastShown()) return;
+        clearTimeout(overlayTimer);
+        // is-hover stays on after leaving so the wash doesn't jump back to 95% mid-fade
+        overlay.classList.add('is-hover', 'is-visible');
+      });
+      toast.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'mouse') hideOverlay();
+      });
+
+      /* ---------- toast ---------- */
+      const toastShown = () => toast.classList.contains('is-in');
+
+      function resetCopy() {
+        copyBtn.dataset.state = 'idle';
+        copyBtn.setAttribute('aria-label', 'Copy link');
+      }
+
+      function showToast() {
+        clearTimeout(toastTimer);
+        resetCopy();
+        toast.inert = false;
+        toast.classList.add('is-in');
+        // land focus on the main action for keyboard users without stealing the page scroll
+        copyBtn.focus({ preventScroll: true, focusVisible: false });
+      }
+
+      function hideToast() {
+        clearTimeout(toastTimer);
+        clearTimeout(revealTimer);
+        if (!toastShown()) return;
+        const hadFocus = toast.contains(document.activeElement);
+        toast.classList.remove('is-in');
+        toast.inert = true;
+        if (hadFocus) trigger.focus({ preventScroll: true });
+      }
+
+      function nudgeToast() {
+        if (reduceMotion.matches) return;
+        toast.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.035)' }, { transform: 'scale(1)' }],
+          { duration: 360, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+        );
+      }
+
+      function createShareLink() {
+        showOverlay();
+        if (toastShown()) {
+          resetCopy();
+          nudgeToast();
+          return;
+        }
+        // wait for the frosted layer to finish settling so the toast's opening plays on a still backdrop
+        clearTimeout(revealTimer);
+        revealTimer = setTimeout(showToast, TOAST_DELAY);
+      }
+
+      async function writeClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+          document.body.appendChild(ta);
+          ta.select();
+          let ok = false;
+          try { ok = document.execCommand('copy'); } catch {}
+          ta.remove();
+          return ok;
+        }
+      }
+
+      copyBtn.addEventListener('click', async () => {
+        if (copyBtn.dataset.state === 'copied') return;
+        await writeClipboard(url);
+        copyBtn.dataset.state = 'copied';
+        copyBtn.setAttribute('aria-label', 'Link copied');
+        announcer.textContent = '';
+        requestAnimationFrame(() => { announcer.textContent = 'Link copied'; });
+        toastTimer = setTimeout(() => { hideToast(); hideOverlay(); }, COPIED_HOLD);
+      });
+
+      closeBtn.addEventListener('click', () => { hideToast(); hideOverlay(); });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (isOpen()) { closeMenu(true); return; }
+        if (toastShown()) { hideToast(); hideOverlay(); }
+      });
+    })();
+  </script>
+</body>
+</html>
