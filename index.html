@@ -251,7 +251,8 @@
     .link-chip { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--surface); border: 1px solid var(--line-soft); }
     .link-chip img { width: 16px; height: 16px; }
     .link-url { font-size: 16px; line-height: 20px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .link-url .url-text { transition: color 200ms ease; }
+    /* the link itself copies on click, same as the Copy Link button */
+    .link-url .url-text { font-size: inherit; line-height: inherit; border-radius: 4px; cursor: pointer; transition: color 200ms ease; }
     @media (hover: hover) and (pointer: fine) {
       /* hovering the toast lifts the link to the same black as its icon */
       .toast:hover .url-text { color: var(--black); }
@@ -547,7 +548,7 @@
      <div class="toast-body">
       <div class="toast-link">
         <span class="link-chip stagger"><img src="assets/share/link.svg" alt="" /></span>
-        <span class="link-url stagger" id="shareUrl"><span class="url-text">https://r.io/FHg8KLm</span></span>
+        <span class="link-url stagger" id="shareUrl"><button class="url-text" id="urlBtn" type="button" title="Copy link">https://r.io/FHg8KLm</button></span>
       </div>
       <div class="toast-actions stagger">
         <button class="tbtn tbtn-copy" id="copyBtn" type="button" data-state="idle" aria-label="Copy link">
@@ -798,12 +799,15 @@
         }
       }
 
-      copyBtn.addEventListener('click', async () => {
+      // the Copy Link button and the link text both copy, and both play the button's copied badge
+      async function copyFromToast() {
         const ok = await writeClipboard(url);
         if (!ok) return;
         clearTimeout(autoCopyTimer);
         showCopied();
-      });
+      }
+      copyBtn.addEventListener('click', copyFromToast);
+      document.getElementById('urlBtn').addEventListener('click', copyFromToast);
 
       closeBtn.addEventListener('click', () => { hideToast(); hideOverlay(); });
 
