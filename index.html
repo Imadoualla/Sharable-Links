@@ -18,6 +18,9 @@
       --faint: #bfbfbf;
       --line: #ededed;
       --line-soft: #f8f8f8;
+      /* copied confirmation */
+      --green: #18794e;
+      --green-bg: #ebfbf1;
       --grad-dark: linear-gradient(180deg, #1c201d 0%, #000 100%);
       --inset-glow: inset 0 2px 5.9px rgba(255, 255, 255, 0.42);
       --btn-drop: 0 1px 0.5px rgba(0, 0, 0, 0.1);
@@ -133,9 +136,7 @@
     .menu-item:focus-visible { outline: none; }
     .menu-item .mask-ic { width: 20px; height: 20px; }
     .menu-item .logo-ic { position: relative; width: 20px; height: 20px; flex: none; overflow: hidden; }
-    /* brand logos sit grey with the other rows, and take their real colours when the row is active */
-    .menu-item .logo-ic img { position: absolute; filter: grayscale(1); opacity: 0.5; transition: filter 150ms ease, opacity 150ms ease; }
-    .menu-item.is-active .logo-ic img { filter: none; opacity: 1; }
+    .menu-item .logo-ic img { position: absolute; }
     .menu-item .logo-ic.drive img { inset: 10.12% 5.01% 11.29% 5.04%; width: 89.95%; height: 78.59%; }
     .menu-item .logo-ic.dropbox img { inset: 10% 5% 13.52% 5%; width: 90%; height: 76.48%; }
     .menu-item .drive-text, .menu-item .dropbox-text { font-feature-settings: "ss01" 1; }
@@ -276,38 +277,50 @@
       height: 36px; display: inline-flex; align-items: center; justify-content: center;
       border-radius: 10px; background: var(--surface); border: 1px solid var(--line-soft); color: var(--muted);
       overflow: hidden;
-      transition: color 160ms ease, box-shadow 200ms ease, transform 140ms var(--ease-out);
+      transition: color 160ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 200ms ease, transform 140ms var(--ease-out);
     }
     .tbtn:active { transform: scale(0.96); }
     .tbtn-close { width: 36px; padding: 10px; }
     .tbtn-close .mask-ic { width: 16px; height: 16px; --src: url("assets/share/close.svg"); }
 
-    /* Copy button: icon hidden at rest, slides in on hover, gives way to "Link copied" once copied */
+    /*
+      Copy button: two faces stacked in one cell, so the button never changes size between them.
+        face-copy: "Copy Link", where the button rests; its icon is tucked away until hover
+        face-done: green "Link copied" badge with a check, shown for a moment after each copy
+      The swap is a short vertical slide with a touch of blur; the check circle pops and its tick
+      draws in each time the link is copied.
+    */
     .tbtn-copy { padding: 10px 12px; font-size: 14px; line-height: 16px; }
-    .copy-inner { display: flex; align-items: center; gap: 4px; transition: transform 260ms var(--ease-out); }
-    .copy-ic { position: relative; width: 16px; height: 16px; flex: none; transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out), filter 200ms var(--ease-out); }
-    .copy-ic .mask-ic { position: absolute; inset: 0; --src: url("assets/share/copy.svg"); }
-    .copy-labels { position: relative; display: grid; justify-items: center; }
-    .copy-labels > span { grid-area: 1 / 1; white-space: nowrap; transition: opacity 180ms var(--ease-out), transform 280ms var(--ease-out), filter 180ms var(--ease-out); }
-    /* "Link copied" is laid over "Copy Link" without widening the button, so the toast keeps its design size */
-    .copy-labels .done { position: absolute; inset: 0; display: flex; justify-content: center; opacity: 0; transform: translateY(8px); filter: blur(2px); }
+    .copy-faces { display: grid; }
+    .copy-face {
+      grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+      transition: opacity 180ms var(--ease-out), transform 280ms var(--ease-out), filter 180ms var(--ease-out);
+    }
+    .copy-row { display: flex; align-items: center; gap: 6px; transition: transform 260ms var(--ease-out); }
+    .face-copy .mask-ic { width: 16px; height: 16px; --src: url("assets/share/copy.svg"); transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out), filter 200ms var(--ease-out); }
+    .face-done { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+    .copy-check { width: 16px; height: 16px; flex: none; overflow: visible; }
+    .copy-check circle { fill: currentColor; transform-box: fill-box; transform-origin: center; transform: scale(0.5); opacity: 0; transition: transform 320ms var(--ease-out), opacity 140ms ease; }
+    .copy-check path { stroke: #fff; stroke-dasharray: 1; stroke-dashoffset: 1; }
 
     @media (hover: hover) and (pointer: fine) {
-      /* at rest: label centred, icon tucked away */
-      .tbtn-copy .copy-inner { transform: translateX(-10px); }
-      .tbtn-copy .copy-ic { opacity: 0; transform: scale(0.6) translateX(4px); filter: blur(2px); }
-      .tbtn-copy:hover .copy-inner, .tbtn-copy:focus-visible .copy-inner { transform: none; }
-      .tbtn-copy:hover .copy-ic, .tbtn-copy:focus-visible .copy-ic { opacity: 1; transform: none; filter: none; }
+      /* at rest: label centred, copy icon tucked away; hover slides the icon in */
+      .tbtn-copy .copy-row { transform: translateX(-11px); }
+      .tbtn-copy .face-copy .mask-ic { opacity: 0; transform: scale(0.6) translateX(4px); filter: blur(2px); }
+      .tbtn-copy:hover .copy-row, .tbtn-copy:focus-visible .copy-row { transform: none; }
+      .tbtn-copy:hover .face-copy .mask-ic, .tbtn-copy:focus-visible .face-copy .mask-ic { opacity: 1; transform: none; filter: none; }
       .tbtn:hover { color: var(--black); }
       .tbtn-copy:hover { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
     }
 
-    .tbtn-copy[data-state="copied"] { color: var(--black); box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); cursor: default; }
-    /* text only once copied: the icon tucks away and the label re-centres in the button */
-    .tbtn-copy[data-state="copied"] .copy-inner { transform: translateX(-10px); }
-    .tbtn-copy[data-state="copied"] .copy-ic { opacity: 0; transform: scale(0.6) translateX(4px); filter: blur(2px); }
-    .tbtn-copy[data-state="copied"] .copy-labels .idle { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
-    .tbtn-copy[data-state="copied"] .copy-labels .done { opacity: 1; transform: none; filter: none; transition-delay: 40ms; }
+    /* green "Link copied" badge */
+    .tbtn-copy[data-state="copied"] {
+      color: var(--green); background-color: var(--green-bg); border-color: var(--green-bg); box-shadow: none;
+    }
+    .tbtn-copy[data-state="copied"] .face-copy { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
+    .tbtn-copy[data-state="copied"] .face-done { opacity: 1; transform: none; filter: none; transition-delay: 40ms; }
+    .tbtn-copy[data-state="copied"] .copy-check circle { transform: none; opacity: 1; transition-delay: 60ms; }
+    .tbtn-copy[data-state="copied"] .copy-check path { stroke-dashoffset: 0; transition: stroke-dashoffset 300ms var(--ease-out) 180ms; }
 
     /* ---------- Small screens ---------- */
     @media (max-width: 1024px) {
@@ -326,9 +339,9 @@
 
     /* ---------- Reduced motion: keep the fades, drop the travel ---------- */
     @media (prefers-reduced-motion: reduce) {
-      .menu, .menu .menu-item, .toast, .toast .stagger, .copy-labels > span, .copy-ic, .copy-inner { transform: none !important; }
+      .menu, .menu .menu-item, .toast, .toast .stagger, .copy-face, .copy-row, .face-copy .mask-ic, .copy-check circle { transform: none !important; }
       .menu-hl { transition: opacity 120ms ease; }
-      .copy-labels > span, .copy-ic, .toast .stagger { filter: none !important; }
+      .copy-face, .face-copy .mask-ic, .toast .stagger { filter: none !important; }
       .toast-body, .toast.is-in .toast-body { clip-path: none; }
       .toast::before, .toast.is-in::before { left: 0; right: 0; filter: none; transition: none; }
     }
@@ -537,14 +550,11 @@
         <span class="link-url stagger" id="shareUrl"><span class="url-text">https://r.io/FHg8KLm</span></span>
       </div>
       <div class="toast-actions stagger">
-        <button class="tbtn tbtn-copy" id="copyBtn" type="button" data-state="idle">
-          <span class="copy-inner">
-            <span class="copy-ic" aria-hidden="true">
-              <span class="mask-ic"></span>
-            </span>
-            <span class="copy-labels">
-              <span class="idle">Copy Link</span>
-              <span class="done" aria-hidden="true">Link copied</span>
+        <button class="tbtn tbtn-copy" id="copyBtn" type="button" data-state="idle" aria-label="Copy link">
+          <span class="copy-faces">
+            <span class="copy-face face-copy" aria-hidden="true"><span class="copy-row"><span class="mask-ic"></span>Copy Link</span></span>
+            <span class="copy-face face-done" aria-hidden="true">
+              <svg class="copy-check" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" /><path d="M4.9 8.3 7 10.3 11.1 6.1" pathLength="1" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>Link copied
             </span>
           </span>
         </button>
@@ -563,7 +573,8 @@
       const TOAST_OPEN = 1200;     // toast's line → full-width opening, after which the overlay fades (1s)
       const TOAST_DELAY = OVERLAY_IN + OVERLAY_REST;
       const OVERLAY_HOLD = TOAST_DELAY + TOAST_OPEN;
-      const COPIED_HOLD = 1500;    // "Copied" stays readable before the toast leaves
+      const AUTO_COPY_AT = 700;    // after the toast starts opening: play the copied badge as its contents come into focus
+      const COPIED_HOLD = 3000;    // how long the green "Link copied" badge shows before returning to "Copy Link"
       const ROW = 44;
 
       const trigger = document.getElementById('menuTrigger');
@@ -585,7 +596,7 @@
       document.getElementById('downloadAllBtnLabel').textContent = downloadAllText;
 
       let active = -1;
-      let overlayTimer = 0, toastTimer = 0, revealTimer = 0;
+      let overlayTimer = 0, revealTimer = 0, autoCopyTimer = 0, copyResetTimer = 0;
 
       /* ---------- dropdown ---------- */
       const isOpen = () => menu.classList.contains('is-open');
@@ -686,23 +697,60 @@
       /* ---------- toast ---------- */
       const toastShown = () => toast.classList.contains('is-in');
 
-      function resetCopy() {
-        copyBtn.dataset.state = 'idle';
-        copyBtn.setAttribute('aria-label', 'Copy link');
+      /*
+        Copy button states (data-state):
+          idle:   "Copy Link", where it rests (icon slides in on hover)
+          copied: green "Link copied" badge with its check, shown for COPIED_HOLD after each copy
+        The link is copied automatically by the Create Share Link click, and the badge plays once the
+        toast's contents are in focus. The toast never closes itself; only × or Escape closes it.
+      */
+      function setCopyState(state) {
+        copyBtn.dataset.state = state;
+        copyBtn.setAttribute('aria-label', state === 'copied' ? 'Link copied' : 'Copy link');
       }
 
-      function showToast() {
-        clearTimeout(toastTimer);
-        resetCopy();
+      function announceCopied() {
+        announcer.textContent = '';
+        requestAnimationFrame(() => { announcer.textContent = 'Link copied'; });
+      }
+
+      function pulseCopy() {
+        if (reduceMotion.matches) return;
+        copyBtn.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }],
+          { duration: 320, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+        );
+      }
+
+      // green badge for a moment, then back to "Copy Link"; copying again mid-badge replays it
+      function showCopied() {
+        clearTimeout(copyResetTimer);
+        if (copyBtn.dataset.state === 'copied') {
+          setCopyState('idle');
+          void getComputedStyle(copyBtn).color; // commit the idle styles so the check draws in again
+        }
+        setCopyState('copied');
+        pulseCopy();
+        announceCopied();
+        copyResetTimer = setTimeout(() => setCopyState('idle'), COPIED_HOLD);
+      }
+
+      function showToast(copiedOk) {
+        clearTimeout(autoCopyTimer);
+        clearTimeout(copyResetTimer);
+        setCopyState('idle');
         toast.inert = false;
         toast.classList.add('is-in');
         // land focus on the main action for keyboard users without stealing the page scroll
         copyBtn.focus({ preventScroll: true, focusVisible: false });
+        // the link was copied by the click: confirm it once the toast's contents are in focus
+        if (copiedOk) autoCopyTimer = setTimeout(showCopied, AUTO_COPY_AT);
       }
 
       function hideToast() {
-        clearTimeout(toastTimer);
         clearTimeout(revealTimer);
+        clearTimeout(autoCopyTimer);
+        clearTimeout(copyResetTimer);
         if (!toastShown()) return;
         const hadFocus = toast.contains(document.activeElement);
         toast.classList.remove('is-in');
@@ -719,15 +767,17 @@
       }
 
       function createShareLink() {
+        // copy inside the click itself, while the browser still allows clipboard access
+        const copied = writeClipboard(url);
         showOverlay();
         if (toastShown()) {
-          resetCopy();
           nudgeToast();
+          copied.then((ok) => { if (ok) showCopied(); });
           return;
         }
         // wait for the frosted layer to finish settling so the toast's opening plays on a still backdrop
         clearTimeout(revealTimer);
-        revealTimer = setTimeout(showToast, TOAST_DELAY);
+        revealTimer = setTimeout(async () => showToast(await copied), TOAST_DELAY);
       }
 
       async function writeClipboard(text) {
@@ -749,13 +799,10 @@
       }
 
       copyBtn.addEventListener('click', async () => {
-        if (copyBtn.dataset.state === 'copied') return;
-        await writeClipboard(url);
-        copyBtn.dataset.state = 'copied';
-        copyBtn.setAttribute('aria-label', 'Link copied');
-        announcer.textContent = '';
-        requestAnimationFrame(() => { announcer.textContent = 'Link copied'; });
-        toastTimer = setTimeout(() => { hideToast(); hideOverlay(); }, COPIED_HOLD);
+        const ok = await writeClipboard(url);
+        if (!ok) return;
+        clearTimeout(autoCopyTimer);
+        showCopied();
       });
 
       closeBtn.addEventListener('click', () => { hideToast(); hideOverlay(); });
